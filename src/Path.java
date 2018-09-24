@@ -4,14 +4,18 @@ public class Path {
     private double time;
     private Node ni;
     private Node nf;
+    private String hi;
+    private String hf;
 
     private double probability;
 
-    public Path(double tiempo, Node ni, Node nf) {
+    public Path(String hi, String hf, double time, Node ni, Node nf) {
         this.distance = 0;
-        this.setTime(tiempo);
+        this.setTime(time);
         this.setNi(ni);
         this.setNf(nf);
+        this.hi = hi;
+        this.hf = hf;
     }
 
 
@@ -53,5 +57,13 @@ public class Path {
 
     public double getProbability(){
         return this.probability;
+    }
+
+    public String getHi(){
+        return this.hi;
+    }
+
+    public String getHf(){
+        return this.hf;
     }
 }

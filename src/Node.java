@@ -63,4 +63,8 @@ public class Node {
 
         return mostprob;
     }
+
+    public int getGmt(){
+        return this.gmt;
+    }
 }

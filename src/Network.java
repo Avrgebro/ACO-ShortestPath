@@ -1,5 +1,12 @@
+import java.lang.reflect.Array;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Period;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class Network {
 
@@ -37,31 +44,67 @@ public class Network {
     }
 
     public void generateNetwork(){
-        Node n1 = new Node("SBBR", "America del Sur", -3, -15.8267, -47.9218);
-        Node n2 = new Node("SPIM", "America del Sur", -5, -12.0464, -77.0428);
-        Node n3 = new Node("EDDI", "Europa", 2, 52.52, 13.405);
-        Node n4 = new Node("LEMD", "Europa", 2, 40.4168, -3.7038);
 
-        n1.addPath(new Path(240, n1, n2));
-        n1.addPath(new Path(720, n1, n3));
-        n1.addPath(new Path(610, n1, n4));
 
-        n2.addPath(new Path(180, n2, n1));
-        //n2.addPath(new Path(600, n2, n3));
-        n2.addPath(new Path(700, n2, n4));
+        CSVReader reader = new CSVReader();
 
-        n3.addPath(new Path(710, n3, n1));
-        n3.addPath(new Path(610, n3, n2));
-        n3.addPath(new Path(150, n3, n4));
+        this.nodes = reader.readCities("/home/jose/Downloads/aeropuertos.csv");
+        ArrayList<String[]> paths = reader.readPaths("/home/jose/Downloads/planes_vuelo.txt");
 
-        n4.addPath(new Path(700, n4, n1));
-        n4.addPath(new Path(680, n4, n2));
-        n4.addPath(new Path(120, n4, n3));
+        System.out.println("Termine de leer");
+        System.out.println(this.nodes.size());
+        System.out.println(paths.size());
 
-        this.nodes.add(n1);
-        this.nodes.add(n2);
-        this.nodes.add(n3);
-        this.nodes.add(n4);
+        for(String[] p : paths){
+            //obtengo los nodos para ese camino
+            Node n1 = this.getNode(p[0]);
+            Node n2 = this.getNode(p[1]);
+            // genero el tiempo necesario de vuelo considerando huso horario
+
+            double time = this.flyTime(p[2], p[3], n1.getGmt(), n2.getGmt());
+            //
+
+            Path npath = new Path(p[2], p[3], time, n1, n2);
+
+            //this.paths.add(npath);
+            n1.addPath(npath);
+        }
+
+    }
+
+    public double flyTime(String h1, String h2, int u1, int u2){
+
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+        Date t1 = null;
+        Date t2 = null;
+        try {
+            t1 = formatter.parse(h1);
+            t2 = formatter.parse(h2);
+        } catch (ParseException e){
+
+        }
+
+        long p = 0;
+
+        if(t1.after(t2)){
+            Calendar c = Calendar.getInstance();
+            c.setTime(t2);
+            c.add(Calendar.DATE, 1);
+            t2 = c.getTime();
+
+            long minutes = t2.getTime() - t1.getTime();
+            p = TimeUnit.MILLISECONDS.toMinutes(minutes);
+
+
+        } else {
+            long minutes = t2.getTime() - t1.getTime();
+            p = TimeUnit.MILLISECONDS.toMinutes(minutes);
+        }
+
+        double r = (double) p;
+        r -= (double) (u1 + u2);
+
+        return r;
     }
 
     public void setProbs(){

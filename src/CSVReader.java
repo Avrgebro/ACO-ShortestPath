@@ -57,13 +57,13 @@ public class CSVReader {
 
     }
 
-    public ArrayList<Path> readPaths(String route, ArrayList<Node> cities){
+    public ArrayList<String[]> readPaths(String route){
 
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = "-";
 
-        ArrayList<Path> plans = new ArrayList<>();
+        ArrayList<String[]> plans = new ArrayList<>();
 
         try {
 
@@ -72,6 +72,7 @@ public class CSVReader {
 
                 String[] plan = line.split(cvsSplitBy);
 
+                plans.add(plan);
 
             }
 

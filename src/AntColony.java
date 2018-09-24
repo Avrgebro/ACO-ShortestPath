@@ -14,23 +14,21 @@ public class AntColony {
 
 
 
-    public AntColony(int iter, int nAnts, String origin, String destination){
+    public AntColony(int iter, int nAnts){
 
         this.iter = iter;
         this.nAnts = nAnts;
 
         network = new Network();
         this.network.generateNetwork();
+        System.out.println("Mundo generado");
         this.network.setProbs();
+        System.out.println("probabilidades seteadas");
 
 
-        this.origin = network.getNode(origin); // se setea el nodo inicial
-        this.destination = network.getNode(destination); // se setea el destino
+        //if(this.origin==null || this.destination==null) return;
 
-        if(this.origin==null || this.destination==null) return;
 
-        ants = new ArrayList<>();
-        GenerateAnts();
 
     }
 
@@ -44,17 +42,33 @@ public class AntColony {
         }
     }
 
-    public void Simulation(){
-        for(int i = 0; i<this.iter; i++){
+    public void Simulation(String origin, String destination, String h){
 
+        this.origin = network.getNode(origin); // se setea el nodo inicial
+        this.destination = network.getNode(destination); // se setea el destino
+
+        ants = new ArrayList<>();
+        GenerateAnts();
+
+        for(int i = 0; i<this.iter; i++){
+            System.out.println("iter " + i);
+            int hor = 0;
             for(Ant a : this.ants){
+                int stop = 0;
                 while(!a.getCurrent().equals(this.destination)){
                     Node currnode = a.getCurrent();
                     Path selectedPath = getProbablePath(currnode);
                     a.setCurrent(selectedPath.getNf());
                     a.addTraveledPath(selectedPath);
-
+                    stop++;
+                    if(stop > 5000){
+                        a.setCurrent(this.origin);
+                        break;
+                    }
                 }
+
+                hor++;
+                System.out.println(hor);
             }
 
             HashMap<Path, Double> pheromonePerPath = new HashMap<>();
@@ -81,7 +95,7 @@ public class AntColony {
             }
 
             for(Path path : fastestAnt.getTraveledPaths()){
-                pheromonePerPath.put(path, pheromonePerPath.get(path)+2.0/shortestTime);
+                pheromonePerPath.put(path, pheromonePerPath.get(path)+3.0/shortestTime);
             }
 
             this.network.updateProbs(pheromonePerPath);
@@ -92,19 +106,28 @@ public class AntColony {
         }
 
         ArrayList<Node> shortestpath = new ArrayList<>();
-        shortestpath.add(origin);
-        Node current = origin;
+        ArrayList<Path> followedpath = new ArrayList<>();
+        shortestpath.add(this.origin);
+        Node current = this.origin;
         double finaltime = 0.0;
 
-        while(current != destination){
-            finaltime += current.mostProbablePath().getTime();
+        while(current != this.destination){
+            //System.out.println(current.getName());
+            Path mostprob = current.mostProbablePath();
+            followedpath.add(mostprob);
+            finaltime += mostprob.getTime();
             current = current.mostProbablePath().getNf();
             shortestpath.add(current);
         }
 
-        for(Node n : shortestpath){
-            System.out.println(n.getName());
+        for(Path p :followedpath){
+            System.out.println(p.getNi().getName()+" "+p.getNf().getName()+" "+p.getHi()+"-"+p.getHf());
         }
+
+        String hi = followedpath.get(0).getHi();
+        double wait = network.flyTime(h, hi, 0, 0);
+
+
         System.out.println(finaltime);
 
 
