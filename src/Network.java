@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.abs;
+
 public class Network {
 
     private ArrayList<Node> nodes;
@@ -66,7 +68,7 @@ public class Network {
 
             Path npath = new Path(p[2], p[3], time, n1, n2);
 
-            //this.paths.add(npath);
+            this.paths.add(npath);
             n1.addPath(npath);
         }
 
@@ -101,8 +103,14 @@ public class Network {
             p = TimeUnit.MILLISECONDS.toMinutes(minutes);
         }
 
+
+
         double r = (double) p;
-        r -= (double) (u1 + u2);
+
+        //si los husos son signos distintos se suma su abs
+        //si son iguales, se resta su abs()
+        r += (double) abs(u1 - u2)*60;
+
 
         return r;
     }
@@ -136,6 +144,8 @@ public class Network {
 
         }
     }
+
+
 
 
 }

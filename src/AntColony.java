@@ -47,28 +47,41 @@ public class AntColony {
         this.origin = network.getNode(origin); // se setea el nodo inicial
         this.destination = network.getNode(destination); // se setea el destino
 
+        /*ArrayList<Path> aux = this.network.getPaths();
+        for(Path p : aux){
+            if(p.getNi().getName().equals(origin) && p.getNf().getName().equals(destination)){
+                p.setProbability(0.2);
+            }
+        }*/
+
         ants = new ArrayList<>();
         GenerateAnts();
 
         for(int i = 0; i<this.iter; i++){
-            System.out.println("iter " + i);
+            //System.out.println("iter " + i);
             int hor = 0;
             for(Ant a : this.ants){
                 int stop = 0;
+                Path prevp = null;
                 while(!a.getCurrent().equals(this.destination)){
                     Node currnode = a.getCurrent();
                     Path selectedPath = getProbablePath(currnode);
+                    double layover = 0.0;
+                    if(prevp != null){
+                        layover = this.network.flyTime(prevp.getHf(), selectedPath.getHi(), 0, 0);
+                    }
                     a.setCurrent(selectedPath.getNf());
                     a.addTraveledPath(selectedPath);
-                    stop++;
+                    a.addTtraveled(layover);
+                    /*stop++;
                     if(stop > 5000){
                         a.setCurrent(this.origin);
                         break;
-                    }
+                    }*/
                 }
 
                 hor++;
-                System.out.println(hor);
+                //System.out.println(hor);
             }
 
             HashMap<Path, Double> pheromonePerPath = new HashMap<>();
@@ -95,7 +108,7 @@ public class AntColony {
             }
 
             for(Path path : fastestAnt.getTraveledPaths()){
-                pheromonePerPath.put(path, pheromonePerPath.get(path)+3.0/shortestTime);
+                pheromonePerPath.put(path, pheromonePerPath.get(path)+150.0/shortestTime);
             }
 
             this.network.updateProbs(pheromonePerPath);
@@ -110,12 +123,18 @@ public class AntColony {
         shortestpath.add(this.origin);
         Node current = this.origin;
         double finaltime = 0.0;
+        Node prev = null;
 
         while(current != this.destination){
             //System.out.println(current.getName());
             Path mostprob = current.mostProbablePath();
+            if(shortestpath.contains(mostprob.getNf())){
+                mostprob.setProbability(0.0);
+                mostprob = current.mostProbablePath();
+            }
             followedpath.add(mostprob);
             finaltime += mostprob.getTime();
+            prev = current;
             current = current.mostProbablePath().getNf();
             shortestpath.add(current);
         }
@@ -127,8 +146,26 @@ public class AntColony {
         String hi = followedpath.get(0).getHi();
         double wait = network.flyTime(h, hi, 0, 0);
 
+        finaltime += wait;
 
-        System.out.println(finaltime);
+        System.out.println(wait + " " + h);
+
+
+        int conti = this.origin.getCont().equals(this.destination.getCont()) ? 1 : 0;
+        double th = 0;
+        if(conti == 1){
+            th = 24.0;
+        } else{
+            th = 48.0;
+        }
+
+        if((finaltime/60) <= th){
+            System.out.println("Se puede realizar el envio - tiempo: " + finaltime/60 + " / " + finaltime );
+        } else {
+            System.out.println("No se puede realizar el envio - tiempo: " + finaltime/60+ " / " + finaltime );
+        }
+
+        System.out.println("--------------------");
 
 
 
@@ -137,6 +174,7 @@ public class AntColony {
     private void resetAnts(){
         for(Ant a : this.ants){
             a.setCurrent(this.origin);
+            a.clearAnt();
         }
     }
 
@@ -157,6 +195,12 @@ public class AntColony {
             stop--;
         }
         return n.getPaths().get(0);
+
+    }
+
+    public void resetColony(){
+        this.network.setProbs();
+        this.resetAnts();
 
     }
 

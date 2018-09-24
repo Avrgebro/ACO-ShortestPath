@@ -94,4 +94,42 @@ public class CSVReader {
 
         return plans;
     }
+
+    public ArrayList<String[]> readParcels(String route){
+
+        BufferedReader br = null;
+        String line = "";
+        String cvsSplitBy = "-";
+
+        ArrayList<String[]> parcels = new ArrayList<>();
+
+        try {
+
+            br = new BufferedReader(new FileReader(route));
+            while ((line = br.readLine()) != null) {
+
+                String[] plan = line.split(cvsSplitBy);
+
+                parcels.add(plan);
+
+            }
+
+            return  parcels;
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return parcels;
+    }
 }

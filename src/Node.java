@@ -67,4 +67,8 @@ public class Node {
     public int getGmt(){
         return this.gmt;
     }
+
+    public String getCont(){
+        return this.cont;
+    }
 }

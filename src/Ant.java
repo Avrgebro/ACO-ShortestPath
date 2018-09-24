@@ -47,4 +47,14 @@ public class Ant {
     public ArrayList<Path> getTraveledPaths(){
         return this.paths;
     }
+
+    public void clearPaths(){
+        this.paths.clear();
+    }
+
+    public void clearAnt(){
+        this.paths.clear();
+        this.ttraveled = 0.0;
+        this.dtraveled = 0.0;
+    }
 }
